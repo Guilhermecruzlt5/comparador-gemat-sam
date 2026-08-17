@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Comparador GEMAT × SAM — URE Leste 5</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<style>
+:root{
+  --blue:#164b7a;--blue2:#2e6fa3;--green:#3d8b67;--red:#c62828;
+  --redbg:#fde3e3;--yellow:#fff3c4;--bg:#f4f7fa;--card:#fff;--text:#203040;
+  --muted:#657585;--line:#dce6ef
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:linear-gradient(135deg,#eef5fb,#f6faf7);color:var(--text)}
+header{background:linear-gradient(110deg,var(--blue),#2c7299);color:#fff;padding:28px 5%;box-shadow:0 3px 15px #0002}
+header h1{margin:0 0 6px;font-size:28px} header p{margin:0;opacity:.9}
+main{max-width:1400px;margin:24px auto;padding:0 18px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.card{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 5px 20px #17324d12;border:1px solid var(--line)}
+.card h2{margin:0 0 12px;font-size:18px;color:var(--blue)}
+.drop{border:2px dashed #8db1cc;border-radius:12px;padding:28px;text-align:center;background:#f8fbfe;cursor:pointer;transition:.2s;display:block}
+.drop:hover,.drop.drag{border-color:var(--green);background:#f5fbf7}
+.drop input{display:none}.file{font-weight:700;margin-top:8px;word-break:break-word}
+.hint{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.45}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn{border:0;border-radius:10px;padding:11px 17px;font-weight:700;cursor:pointer}
+.primary{background:var(--blue);color:#fff}.green{background:var(--green);color:#fff}
+.ghost{background:#eaf1f6;color:var(--blue)}.dangerbtn{background:#fff0f0;color:var(--red)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.stats{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin:18px 0}
+.stat{background:#fff;border-radius:12px;padding:13px;border:1px solid #e0e8ee}
+.stat b{display:block;font-size:22px;color:var(--blue)}.stat span{font-size:12px;color:#687786}
+.note{background:#edf7f1;border-left:5px solid var(--green);padding:13px 15px;border-radius:8px;margin:14px 0;font-size:14px}
+.warn{background:#fff7df;border-left-color:#d39b00}.danger{background:var(--redbg);border-left:5px solid var(--red)}
+.progress{height:8px;background:#e8eef3;border-radius:99px;overflow:hidden;margin:12px 0}
+.progress>div{height:100%;width:0;background:var(--green);transition:width .15s}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+.search{flex:1;min-width:240px;border:1px solid #cfdbe5;border-radius:9px;padding:10px 12px;font:inherit}
+.select{border:1px solid #cfdbe5;border-radius:9px;padding:10px 12px;background:#fff;color:var(--text)}
+.tablewrap{overflow:auto;max-height:610px;border:1px solid #dce5ec;border-radius:10px}
+.tablewrap table{border-collapse:collapse;width:100%;font-size:12px}
+.tablewrap th{position:sticky;top:0;background:var(--blue);color:#fff;padding:8px;text-align:left;z-index:1;white-space:nowrap}
+.tablewrap td{padding:7px;border-bottom:1px solid #e5ebef;vertical-align:top}
+.tablewrap tr:hover td{background:#f7fafc}
+.redrow td{background:var(--redbg)!important}
+.yellowrow td{background:var(--yellow)!important}
+.redunderline{color:var(--red)!important;text-decoration-line:underline;text-decoration-color:var(--red);text-decoration-thickness:2px}
+.badge{display:inline-block;padding:3px 7px;border-radius:99px;font-size:11px;font-weight:700;white-space:nowrap}
+.b-exact{background:#dff2e7;color:#216342}.b-high{background:#fff0c7;color:#875b00}.b-no{background:#ffdede;color:#a32020}
+.empty{text-align:center;padding:28px;color:var(--muted)}
+.footer{font-size:12px;color:#71808d;text-align:center;padding:24px}
+.hidden{display:none}
+@media(max-width:1150px){.stats{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Comparador de Patrimônio — GEMAT × SAM</h1>
+  <p>URE Leste 5 • consolidação DE → PARA por descrição do bem, chapa antiga e chapa nova</p>
+</header>
+<main>
+  <div class="grid">
+    <section class="card">
+      <h2>1. Planilha GEMAT — Patrimônio Antigo</h2>
+      <label class="drop" id="dropG">Clique ou arraste o arquivo Excel
+        <input id="gemat" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+      </label>
+      <div id="gematName" class="file">Nenhum arquivo selecionado</div>
+      <div class="hint">Usa <b>“Nº DO PATRIMÔNIO”</b> + <b>“DESCRIÇÃO”</b>. A descrição é a chave de relacionamento e o número é a chapa/patrimônio antigo (<b>DE</b>).</div>
+    </section>
+    <section class="card">
+      <h2>2. Planilha SAM — Patrimônio Novo</h2>
+      <label class="drop" id="dropS">Clique ou arraste o arquivo Excel
+        <input id="sam" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+      </label>
+      <div id="samName" class="file">Nenhum arquivo selecionado</div>
+      <div class="hint">Usa <b>“Chapa”</b> + <b>“Material”</b>. A descrição é comparada com a do GEMAT e a chapa nova fica no campo <b>PARA</b>.</div>
+    </section>
+  </div>
+  <div class="actions">
+    <button id="run" class="btn primary" disabled>Comparar arquivos</button>
+    <button id="export" class="btn green" disabled>Exportar Excel consolidado</button>
+    <button id="exportFound" class="btn green" disabled>Exportar somente CHAPA ANTIGA → CHAPA NOVA</button>
+    <button id="clear" class="btn ghost">Limpar</button>
+  </div>
+  <div id="msg" class="note hidden"></div>
+  <div id="progressBox" class="hidden"><div id="progressText" class="hint">Processando...</div><div class="progress"><div id="progressBar"></div></div></div>
+  <div id="stats" class="stats hidden"></div>
+  <section id="result" class="card hidden">
+    <h2>Consolidado da comparação — CHAPA ANTIGA → CHAPA NOVA</h2>
+    <div class="note"><b>Regra de relacionamento:</b> a <b>descrição do item</b> é a chave principal entre os dois relatórios. Após localizar a descrição equivalente, o sistema relaciona a <b>chapa/patrimônio antigo</b> com a <b>chapa nova</b>, sempre em relação 1 → 1. Cada chapa nova é utilizada uma única vez. Correspondências semelhantes só são aceitas com alta confiança. Os itens sem correspondência ficam separados e <b>sublinhados em vermelho</b>.</div>
+    <div id="tabs"></div>
+    <div class="toolbar">
+      <input id="search" class="search" placeholder="🔎 Pesquisar patrimônio, chapa ou descrição...">
+      <select id="confidence" class="select"><option value="all">Todas as correspondências</option><option value="exact">Exatas</option><option value="high">Semelhantes</option></select>
+      <select id="pageSize" class="select"><option value="100">100 por página</option><option value="250" selected>250 por página</option><option value="500">500 por página</option></select>
+    </div>
+    <div id="table"></div><div id="pager" class="actions"></div>
+  </section>
+  <div class="footer">Os arquivos são processados no navegador. O app procura automaticamente a aba correta de cada Pasta de Trabalho do Excel.</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);let gematFile=null,samFile=null,result=null,currentTab='found',currentPage=1;
+$('gemat').onchange=e=>setFile('gemat',e.target.files[0]);$('sam').onchange=e=>setFile('sam',e.target.files[0]);
+function setFile(which,file){if(!file)return;if(!/\.xlsx$/i.test(file.name)){showMsg('<b>Formato inválido.</b> Selecione uma Pasta de Trabalho do Excel (*.xlsx).','danger');return}if(which==='gemat'){$('gematName').textContent=file.name;$('dropG').classList.add('drag');gematFile=file}else{$('samName').textContent=file.name;$('dropS').classList.add('drag');samFile=file}$('run').disabled=!(gematFile&&samFile)}
+function setupDrop(id,which){const el=$(id);['dragenter','dragover'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();el.classList.add('drag')}));['dragleave','drop'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();el.classList.remove('drag')}));el.addEventListener('drop',e=>setFile(which,e.dataTransfer.files[0]))}setupDrop('dropG','gemat');setupDrop('dropS','sam');
+function showMsg(text,type='ok'){$('msg').className='note '+(type==='danger'?'danger':type==='warn'?'warn':'');$('msg').innerHTML=text;$('msg').classList.remove('hidden')}
+function progress(p,text){$('progressBox').classList.remove('hidden');$('progressBar').style.width=Math.max(0,Math.min(100,p))+'%';$('progressText').textContent=text}
+function esc(x){return String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function norm(s){return String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,' e ').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim()}
+function chapaG(v){const s=String(v??'').trim(),d=s.replace(/\D/g,'');return d.length===14?d.slice(0,4)+'.'+d.slice(4,7)+'.'+d.slice(7):s}
+function read(file,role){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:'array',cellDates:false,raw:false,cellNF:true,cellText:true,sheetStubs:true});if(!wb.SheetNames.length)throw new Error('Arquivo sem planilhas.');const wanted=role==='gemat'?['Nº DO PATRIMÔNIO','DESCRIÇÃO']:['CHAPA','MATERIAL'];let best=null;for(const sheetName of wb.SheetNames){const ws=wb.Sheets[sheetName];if(!ws)continue;const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false});let score=0,headerRow=-1;for(let i=0;i<Math.min(rows.length,100);i++){const row=rows[i].map(norm);const matched=wanted.filter(w=>row.some(x=>x===norm(w)||x.includes(norm(w)))).length;if(matched>score){score=matched;headerRow=i}if(matched===wanted.length){best={rows,sheetName,headerRow,score};break}}if(best)break;if(score>0&&(!best||score>best.score))best={rows,sheetName,headerRow,score}}if(!best||best.score<2){let fallback=null;for(const sheetName of wb.SheetNames){const ws=wb.Sheets[sheetName];if(!ws)continue;const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false});const filled=rows.reduce((n,row)=>n+row.filter(v=>String(v??'').trim()!=='').length,0);if(!fallback||filled>fallback.filled)fallback={rows,sheetName,filled}}if(!fallback)throw new Error('Não foi encontrada uma aba com dados.');best={rows:fallback.rows,sheetName:fallback.sheetName,headerRow:-1,score:0}}res({rows:best.rows,sheet:best.sheetName,headerRow:best.headerRow})}catch(x){rej(new Error('Não foi possível abrir a Pasta de Trabalho do Excel: '+x.message))}};r.onerror=()=>rej(new Error('Não foi possível ler o arquivo .xlsx.'));r.readAsArrayBuffer(file)})}
+function lev(a,b){if(a===b)return 100;if(!a||!b)return 0;const m=a.length,n=b.length;let prev=Array(n+1),cur=Array(n+1);for(let j=0;j<=n;j++)prev[j]=j;for(let i=1;i<=m;i++){cur[0]=i;for(let j=1;j<=n;j++){const c=a[i-1]===b[j-1]?0:1;cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+c)}[prev,cur]=[cur,prev]}return Math.round((1-prev[n]/Math.max(m,n))*100)}
+function fuzzy(a,b){const A=new Set(norm(a).split(' ').filter(x=>x.length>2)),B=new Set(norm(b).split(' ').filter(x=>x.length>2));const inter=[...A].filter(x=>B.has(x)).length,uni=new Set([...A,...B]).size;return Math.max(lev(a,b),Math.round((uni?inter/uni:0)*100))}
+function group(arr,key){const m=new Map();arr.forEach(x=>{const k=norm(x[key]);if(!m.has(k))m.set(k,[]);m.get(k).push(x)});return m}
+async function compare(){ $('run').disabled=true;$('export').disabled=true;$('exportFound').disabled=true;showMsg('Lendo e comparando as planilhas...');progress(6,'Lendo os dois arquivos Excel...');try{const [gdata,sdata]=await Promise.all([read(gematFile,'gemat'),read(samFile,'sam')]);const gr=gdata.rows,sr=sdata.rows;progress(20,`Abas selecionadas: GEMAT “${gdata.sheet}” • SAM “${sdata.sheet}”. Localizando cabeçalhos...`);let gh=findHeader(gr,['Nº DO PATRIMÔNIO','DESCRIÇÃO']);if(gh<0)gh=findHeader(gr,['PATRIMÔNIO','DESCRIÇÃO']);const sh=findHeader(sr,['Chapa','Material']);if(gh<0)throw new Error('GEMAT: não foi possível localizar Nº DO PATRIMÔNIO e DESCRIÇÃO.');if(sh<0)throw new Error('SAM: não foi possível localizar Chapa e Material.');const ghRow=gr[gh].map(norm),shRow=sr[sh].map(norm);const gi=ghRow.findIndex(x=>x.includes('patrimonio'));const gd=ghRow.findIndex(x=>x==='descricao'||x.includes('descricao'));const si=shRow.findIndex(x=>x==='chapa'||x.includes('chapa'));const sd=shRow.findIndex(x=>x==='material'||x.includes('material'));if([gi,gd,si,sd].some(x=>x<0))throw new Error('Não foram identificadas todas as colunas obrigatórias.');progress(35,'Carregando patrimônio antigo do GEMAT...');const G=gr.slice(gh+1).filter(r=>String(val(r,gi)).trim()&&String(val(r,gd)).trim()).map((r,i)=>({id:'G'+i,_order:i,chapa:chapaG(val(r,gi)),desc:String(val(r,gd)).trim(),key:norm(val(r,gd))}));progress(48,'Carregando patrimônio novo do SAM...');const S=sr.slice(sh+1).filter(r=>String(val(r,si)).trim()&&String(val(r,sd)).trim()).map((r,i)=>({id:'S'+i,_order:i,chapa:String(val(r,si)).trim(),desc:String(val(r,sd)).trim(),key:norm(val(r,sd))}));const GM=group(G,'desc'),SM=group(S,'desc'),usedS=new Set(),usedG=new Set();const matches=[],divG=[],divS=[];const tokenKey=s=>norm(s).split(' ').filter(Boolean).sort().join(' ');const SByToken=new Map();S.forEach(s=>{const k=tokenKey(s.desc);if(!SByToken.has(k))SByToken.set(k,[]);SByToken.get(k).push(s)});progress(60,'Relacionando patrimônio antigo com patrimônio novo...');for(const g of G){if(usedG.has(g.id))continue;const exact=SM.get(g.key)||[];const candidate=exact.find(s=>!usedS.has(s.id));if(candidate){matches.push({old:g,nw:candidate,sit:'ENCONTRADO',type:'exact',score:100,obs:'Correspondência exata pela descrição normalizada.'});usedG.add(g.id);usedS.add(candidate.id)}}progress(73,'Refinando correspondências semelhantes...');for(const g of G){if(usedG.has(g.id))continue;const candidates=SByToken.get(tokenKey(g.desc))||[];const candidate=candidates.find(s=>!usedS.has(s.id));if(candidate){matches.push({old:g,nw:candidate,sit:'ENCONTRADO',type:'high',score:99,obs:'Correspondência por conjunto de palavras da descrição.'});usedG.add(g.id);usedS.add(candidate.id)}}const pendingG=G.filter(g=>!usedG.has(g.id));for(let i=0;i<pendingG.length;i++){const g=pendingG[i];let best=null;for(const s of S){if(usedS.has(s.id))continue;const score=fuzzy(g.key,s.key);if(score<94)continue;if(!best||score>best.score||(score===best.score&&s._order<best.s._order))best={s,score}}if(best){matches.push({old:g,nw:best.s,sit:'ENCONTRADO – DESCRIÇÃO SEMELHANTE',type:'high',score:best.score,obs:'Correspondência aproximada; patrimônio novo reservado exclusivamente para este patrimônio antigo.'});usedG.add(g.id);usedS.add(best.s.id)}if(i%50===0)progress(73+(i/Math.max(1,pendingG.length))*20,'Refinando correspondências semelhantes...')}matches.sort((a,b)=>String(a.old.chapa).localeCompare(String(b.old.chapa),'pt-BR',{numeric:true}));const seenNew=new Set();for(const m of matches){if(seenNew.has(m.nw.id))throw new Error('Foi detectada duplicidade na associação de patrimônios novos.');seenNew.add(m.nw.id)}G.filter(x=>!usedG.has(x.id)).forEach(x=>divG.push({old:x,sit:'NÃO ENCONTRADO NO SAM',obs:'Patrimônio antigo sem correspondência segura no relatório SAM.'}));S.filter(x=>!usedS.has(x.id)).forEach(x=>divS.push({nw:x,sit:'NÃO ENCONTRADO NO GEMAT',obs:'Patrimônio novo sem correspondente no relatório GEMAT.'}));result={G,S,matches,divG,divS,GM,SM,meta:{gemat:gematFile.name,sam:samFile.name}};render();$('export').disabled=false;$('exportFound').disabled=false;$('result').classList.remove('hidden');progress(100,'Comparação concluída.');showMsg('<b>Comparação concluída.</b> Os itens encontrados foram relacionados em formato <b>DE → PARA</b>. Os divergentes ficaram separados e sublinhados em vermelho.')}catch(e){$('progressBox').classList.add('hidden');showMsg('<b>Erro ao processar as planilhas:</b> '+esc(e.message),'danger')}finally{$('run').disabled=!(gematFile&&samFile)}}
+function findHeader(rows,names){const wanted=names.map(norm);for(let i=0;i<Math.min(rows.length,80);i++){const row=rows[i].map(norm);if(wanted.every(n=>row.some(x=>x===n||x.includes(n))))return i}return -1}function val(row,idx){return idx>=0?row[idx]:''}
+function render(){const r=result,exact=r.matches.filter(x=>x.type==='exact').length,high=r.matches.filter(x=>x.type==='high').length,pct=r.G.length?((r.matches.length/r.G.length)*100).toFixed(1):'0.0';const stats=[['GEMAT',r.G.length],['SAM',r.S.length],['DE → PARA',r.matches.length],['Exatos',exact],['Semelhantes',high],['GEMAT não encontrados',r.divG.length],['% relacionado',pct+'%']];$('stats').classList.remove('hidden');$('stats').innerHTML=stats.map(x=>`<div class="stat"><b>${esc(x[1])}</b><span>${esc(x[0])}</span></div>`).join('');const tabs=[['found','DE → PARA encontrados'],['divG','GEMAT não encontrados'],['divS','SAM não encontrados']];$('tabs').innerHTML='<div class="actions">'+tabs.map((t,i)=>`<button class="btn ${i===0?'primary':'ghost'}" onclick="showTab('${t[0]}')">${t[1]}</button>`).join('')+'</div>';showTab('found')}
+function rowsFiltered(){const q=norm($('search').value),conf=$('confidence').value;let rows=currentTab==='found'?result.matches:currentTab==='divG'?result.divG:result.divS;return rows.filter(x=>{let hay=currentTab==='found'?[x.old.chapa,x.old.desc,x.nw.chapa,x.nw.desc].join(' '):currentTab==='divG'?[x.old.chapa,x.old.desc].join(' '):[x.nw.chapa,x.nw.desc].join(' ');if(q&&!norm(hay).includes(q))return false;if(currentTab==='found'&&conf!=='all'&&x.type!==conf)return false;return true})}
+function showTab(t){currentTab=t;currentPage=1;document.querySelectorAll('#tabs .btn').forEach((b,i)=>b.className='btn '+((['found','divG','divS'][i]===t)?'primary':'ghost'));renderTable()}
+function badge(type,score){return type==='exact'?'<span class="badge b-exact">EXATA</span>':'<span class="badge b-high">SEMELHANTE '+score+'%</span>'}
+function renderTable(){const rows=rowsFiltered(),size=Number($('pageSize').value),pages=Math.max(1,Math.ceil(rows.length/size));if(currentPage>pages)currentPage=pages;const pageRows=rows.slice((currentPage-1)*size,currentPage*size);let headers,cells,classes;if(currentTab==='found'){headers=['Nº CHAPA/PATRIMÔNIO ANTIGO (DE)','DESCRIÇÃO DO BEM NO GEMAT','Nº CHAPA/PATRIMÔNIO NOVO (PARA)','DESCRIÇÃO DO BEM NO SAM','QTDE. GEMAT','QTDE. SAM','CONFIANÇA','SITUAÇÃO','OBSERVAÇÃO'];cells=pageRows.map(x=>[x.old.chapa,x.old.desc,x.nw.chapa,x.nw.desc,result.GM.get(x.old.key)?.length||1,result.SM.get(x.nw.key)?.length||1,badge(x.type,x.score),x.sit,x.obs]);classes=pageRows.map(x=>x.type==='exact'?'':'yellowrow')}else if(currentTab==='divG'){headers=['PATRIMÔNIO ANTIGO (DE)','DESCRIÇÃO','SITUAÇÃO','OBSERVAÇÃO'];cells=pageRows.map(x=>[`<span class="redunderline">${esc(x.old.chapa)}</span>`,`<span class="redunderline">${esc(x.old.desc)}</span>`,`<span class="redunderline">${esc(x.sit)}</span>`,x.obs]);classes=pageRows.map(()=> 'redrow')}else{headers=['PATRIMÔNIO NOVO (PARA)','DESCRIÇÃO','SITUAÇÃO','OBSERVAÇÃO'];cells=pageRows.map(x=>[`<span class="redunderline">${esc(x.nw.chapa)}</span>`,`<span class="redunderline">${esc(x.nw.desc)}</span>`,`<span class="redunderline">${esc(x.sit)}</span>`,x.obs]);classes=pageRows.map(()=> 'redrow')}if(!pageRows.length){$('table').innerHTML='<div class="empty">Nenhum registro para os filtros selecionados.</div>';$('pager').innerHTML='';return}let h='<div class="tablewrap"><table><thead><tr>'+headers.map(x=>`<th>${x}</th>`).join('')+'</tr></thead><tbody>';h+=cells.map((r,i)=>`<tr class="${classes[i]}">`+r.map(x=>`<td>${String(x).startsWith('<span')?x:esc(x)}</td>`).join('')+'</tr>').join('');h+='</tbody></table></div>';$('table').innerHTML=h;$('pager').innerHTML='';if(pages>1){const prev=document.createElement('button');prev.className='btn ghost';prev.textContent='← Anterior';prev.disabled=currentPage===1;prev.onclick=()=>{currentPage--;renderTable()};const info=document.createElement('span');info.className='hint';info.textContent=`Página ${currentPage} de ${pages} • ${rows.length} registros`;const next=document.createElement('button');next.className='btn ghost';next.textContent='Próxima →';next.disabled=currentPage===pages;next.onclick=()=>{currentPage++;renderTable()};$('pager').append(prev,info,next)}else $('pager').innerHTML=`<span class="hint">${rows.length} registro(s) exibido(s)</span>`}
+$('search').oninput=()=>{currentPage=1;renderTable()};$('confidence').onchange=()=>{currentPage=1;renderTable()};$('pageSize').onchange=()=>{currentPage=1;renderTable()};
+function addSheet(wb,name,headers,rows,opts={}){const ws=XLSX.utils.aoa_to_sheet([headers,...rows]);const range=XLSX.utils.decode_range(ws['!ref']);for(let c=range.s.c;c<=range.e.c;c++){const cell=ws[XLSX.utils.encode_cell({r:0,c})];cell.s={fill:{fgColor:{rgb:'164B7A'}},font:{bold:true,color:{rgb:'FFFFFF'}},alignment:{horizontal:'center',vertical:'center',wrapText:true}}}ws['!cols']=headers.map(h=>({wch:Math.min(Math.max(String(h).length+3,16),55)}));ws['!autofilter']={ref:ws['!ref']};if(opts.red)for(let r=1;r<=range.e.r;r++)for(let c=0;c<=range.e.c;c++){const cell=ws[XLSX.utils.encode_cell({r,c})];if(cell)cell.s={fill:{fgColor:{rgb:'FDE3E3'}},font:{color:{rgb:'C62828'},underline:'single'}}}XLSX.utils.book_append_sheet(wb,ws,name)}
+function exportXlsx(onlyFound=false){if(!result)return;const wb=XLSX.utils.book_new();const foundRows=result.matches.map(x=>[x.old.chapa,x.old.desc,x.nw.chapa,x.nw.desc,result.GM.get(x.old.key)?.length||1,result.SM.get(x.nw.key)?.length||1,x.type==='exact'?'EXATA':'SEMELHANTE',x.score,x.sit,x.obs]);addSheet(wb,'CONSOLIDADO_DE_PARA',['CHAPA/PATRIMÔNIO ANTIGO (DE)','DESCRIÇÃO GEMAT','CHAPA/PATRIMÔNIO NOVO (PARA)','DESCRIÇÃO SAM','QTDE. GEMAT','QTDE. SAM','CLASSIFICAÇÃO','CONFIANÇA (%)','SITUAÇÃO','OBSERVAÇÃO'],foundRows);const grouped=new Map();result.matches.forEach(m=>{const key=m.old.key;if(!grouped.has(key))grouped.set(key,{descG:m.old.desc,descS:m.nw.desc,oldChapas:[],newChapas:[],conf:[],situations:[]});const g=grouped.get(key);g.oldChapas.push(m.old.chapa);g.newChapas.push(m.nw.chapa);g.conf.push(m.score);g.situations.push(m.sit)});const groupedRows=[...grouped.values()].map(g=>[g.descG,g.descS,g.oldChapas.join(' | '),g.newChapas.join(' | '),g.oldChapas.length,g.newChapas.length,Math.min(...g.conf),g.situations.every(s=>s==='ENCONTRADO')?'ENCONTRADO':'ENCONTRADO – SEMELHANTE']);addSheet(wb,'CONSOLIDADO_POR_DESCRICAO',['DESCRIÇÃO GEMAT','DESCRIÇÃO SAM','CHAPAS ANTIGAS (DE)','CHAPAS NOVAS (PARA)','QTDE. GEMAT','QTDE. SAM','MENOR CONFIANÇA (%)','SITUAÇÃO'],groupedRows);if(!onlyFound){addSheet(wb,'GEMAT_NAO_ENCONTRADOS',['PATRIMÔNIO ANTIGO (DE)','DESCRIÇÃO','SITUAÇÃO','OBSERVAÇÃO'],result.divG.map(x=>[x.old.chapa,x.old.desc,x.sit,x.obs]),{red:true});addSheet(wb,'SAM_NAO_ENCONTRADOS',['PATRIMÔNIO NOVO (PARA)','DESCRIÇÃO','SITUAÇÃO','OBSERVAÇÃO'],result.divS.map(x=>[x.nw.chapa,x.nw.desc,x.sit,x.obs]),{red:true});addSheet(wb,'DIVERGENCIAS_CONSOLIDADAS',['ORIGEM','PATRIMÔNIO','DESCRIÇÃO','SITUAÇÃO','OBSERVAÇÃO'],[...result.divG.map(x=>['GEMAT',x.old.chapa,x.old.desc,x.sit,x.obs]),...result.divS.map(x=>['SAM',x.nw.chapa,x.nw.desc,x.sit,x.obs])],{red:true})}const resumo=[['INDICADOR','QUANTIDADE'],['Total de registros GEMAT',result.G.length],['Total de registros SAM',result.S.length],['Chapa antiga → chapa nova',result.matches.length],['Correspondências exatas',result.matches.filter(x=>x.type==='exact').length],['Correspondências semelhantes',result.matches.filter(x=>x.type==='high').length],['GEMAT não encontrados no SAM',result.divG.length],['SAM não encontrados no GEMAT',result.divS.length],['% GEMAT relacionado',result.G.length?((result.matches.length/result.G.length)*100).toFixed(2)+'%':'0.00%']];addSheet(wb,'RESUMO',resumo.shift(),resumo);const filename=onlyFound?'Consolidado_Chapa_Antiga_Nova_GEMAT_SAM.xlsx':'Comparacao_GEMAT_SAM_DE_PARA_COMPLETA.xlsx';XLSX.writeFile(wb,filename,{bookType:'xlsx',cellStyles:true,compression:true})}
+$('run').onclick=compare;$('export').onclick=()=>exportXlsx(false);$('exportFound').onclick=()=>exportXlsx(true);$('clear').onclick=()=>location.reload();
+</script>
+</body>
+</html>
